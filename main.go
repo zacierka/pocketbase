@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -61,6 +62,46 @@ func main() {
 
 			return c.JSON(http.StatusOK, map[string]interface{}{"message": "Created New Record for " + userrecord.GetString("discordId")})
 		} /* optional middlewares */)
+
+		return nil
+	})
+
+	/* Strava Subscription Handler */
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.GET("/strava/webhook", func(c echo.Context) error {
+
+			const VERIFY_TOKEN string = "STRAVA"
+			// Parses the query params
+			mode := c.PathParam("hub.mode")
+			token := c.PathParam("hub.verify_token:")
+			challenge := c.PathParam("hub.challenge")
+			// Checks if a token and mode is in the query string of the request
+			if len(mode) == 0 {
+				return c.String(http.StatusForbidden, "Invalid mode")
+			}
+			if len(token) == 0 {
+				return c.String(http.StatusForbidden, "Invalid token")
+			}
+			// Verifies that the mode and token sent are valid
+			if mode == "subscribe" && token == VERIFY_TOKEN {
+				// Responds with the challenge token from the request
+				fmt.Println("WEBHOOK_VERIFIED")
+				return c.JSON(http.StatusOK, map[string]string{"hub.challenge": challenge})
+			} else {
+				// Responds with '403 Forbidden' if verify tokens do not match
+				return c.String(http.StatusForbidden, "Invalid token")
+			}
+		})
+		return nil
+	})
+
+	/* Strava Data Callback  */
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.POST("/oauth/strava", func(c echo.Context) error {
+			/* Do some funky unmarshalling here and see what we get so we can store it */
+			fmt.Println("Got Data back! But what is it")
+			return c.String(http.StatusOK, "EVENT_RECEIVED")
+		})
 
 		return nil
 	})
