@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
 )
@@ -18,14 +16,18 @@ type PostObject struct {
 	Content string `json:"content"`
 }
 
+type StravaData struct {
+	ObjectType string                 `json:"object_type"`     // "athlete" or "activity"
+	ObjectId   int                    `json:"object_id"`       // id of athlete or activity
+	AspectType string                 `json:"aspect_type"`     // "create" "update" "delete"
+	OwnerId    int                    `json:"owner_id"`        // ID of the athlete who owns the event
+	EventTime  int                    `json:"event_time"`      // epoch
+	SubID      int                    `json:"subscription_id"` // subscription id
+	X          map[string]interface{} `json:"-"`
+}
+
 func main() {
 	app := pocketbase.New()
-
-	// serves static files from the provided public dir (if exists)
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
-		return nil
-	})
 
 	// api/blog/post
 	// accept posts from rest endpoint
@@ -63,18 +65,14 @@ func main() {
 			return c.JSON(http.StatusOK, map[string]interface{}{"message": "Created New Record for " + userrecord.GetString("discordId")})
 		} /* optional middlewares */)
 
-		return nil
-	})
-
-	/* Strava Subscription Handler */
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/strava/webhook", func(c echo.Context) error {
 
 			const VERIFY_TOKEN string = "STRAVA"
 			// Parses the query params
-			mode := c.PathParam("hub.mode")
-			token := c.PathParam("hub.verify_token:")
-			challenge := c.PathParam("hub.challenge")
+			mode := c.QueryParam("hub.mode")
+			token := c.QueryParam("hub.verify_token")
+			challenge := c.QueryParam("hub.challenge")
+			fmt.Printf("%s mode, %s token, %s challenge", mode, token, challenge)
 			// Checks if a token and mode is in the query string of the request
 			if len(mode) == 0 {
 				return c.String(http.StatusForbidden, "Invalid mode")
@@ -88,18 +86,30 @@ func main() {
 				fmt.Println("WEBHOOK_VERIFIED")
 				return c.JSON(http.StatusOK, map[string]string{"hub.challenge": challenge})
 			} else {
-				// Responds with '403 Forbidden' if verify tokens do not match
-				return c.String(http.StatusForbidden, "Invalid token")
+				fmt.Println(mode)
+				if token != VERIFY_TOKEN {
+					return c.String(http.StatusForbidden, "Invalid token")
+				}
+				return c.String(http.StatusOK, "OKAY")
 			}
 		})
-		return nil
-	})
 
-	/* Strava Data Callback  */
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.POST("/oauth/strava", func(c echo.Context) error {
+		e.Router.POST("/strava/webhook", func(c echo.Context) error {
 			/* Do some funky unmarshalling here and see what we get so we can store it */
 			fmt.Println("Got Data back! But what is it")
+			var stravaData StravaData
+			if err := c.Bind(&stravaData); err != nil {
+				return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
+			}
+
+			fmt.Printf("%+v", stravaData)
+			if stravaData.ObjectType == "activity" && stravaData.AspectType == "create" {
+				// new post to strava
+				// findout who this is from and then fetch some stats for this item entry
+				// https://www.strava.com/api/v3/activities/{id}?include_all_efforts
+
+			}
+
 			return c.String(http.StatusOK, "EVENT_RECEIVED")
 		})
 

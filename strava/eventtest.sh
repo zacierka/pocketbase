@@ -1,0 +1,1 @@
+curl -X POST $1/strava/webhook -H ‘Content-Type: application/json’ -d '{“aspect_type”: “create”, “event_time”: 1549560669, “object_id”: 0000000000, “object_type”: “activity”, “owner_id”: 9999999, “subscription_id”: 999999 }'
