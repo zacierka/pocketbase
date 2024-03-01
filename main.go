@@ -4,9 +4,11 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -23,6 +25,8 @@ func main() {
 	app := pocketbase.New()
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+
+		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), true))
 
 		e.Router.GET("/exchange_token", func(c echo.Context) error {
 			code := c.QueryParam("code")

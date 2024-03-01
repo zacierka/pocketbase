@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,28 +15,35 @@ import (
 
 func storeAuthData(app *pocketbase.PocketBase, tokenData *TokenExchange) error {
 	// check if user exists
-	record, err := app.Dao().FindFirstRecordByData("users", "stravaId", string(tokenData.athlete.Id))
+	record, err := app.Dao().FindFirstRecordByData("strava_oauth", "discordId", string(tokenData.athlete.Id))
 	if err != nil {
-		return fmt.Errorf("Unable to fetch User") // is this a new user or error fetching
-	}
-	// if user exists - update?
-	form := forms.NewRecordUpsert(app, record)
+		if err == sql.ErrNoRows { // new user
+			// newRecord := models.NewRecord(record.Collection())
 
-	// or form.LoadRequest(r, "")
-	form.LoadData(map[string]any{ // id, blah, blah, blah
+			// form := forms.NewRecordUpsert(app, record)
+			// form.LoadData(map[string]any{
+			// 	"title":          "Lorem ipsum",
+			// 	"active":         true,
+			// 	"someOtherField": 123,
+			// })
+			fmt.Println("ehere")
+		}
+		// error
+		return nil
+	}
+
+	// existing user
+	form := forms.NewRecordUpsert(app, record)
+	form.LoadData(map[string]any{
 		"title":          "Lorem ipsum",
 		"active":         true,
 		"someOtherField": 123,
 	})
 
-	// validate and submit (internally it calls app.Dao().SaveRecord(record) in a transaction)
+	// submit new or existing user update
 	if err := form.Submit(); err != nil {
 		return err
 	}
-
-	// if user is new - store
-
-	// store user here
 
 	return nil
 
