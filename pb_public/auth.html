@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EBC Link Account</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      /* ===== Scrollbar CSS ===== */
+      /* Firefox */
+      * {
+        scrollbar-width: auto;
+        scrollbar-color: #1b222c #010409;
+      }
+
+      /* Chrome, Edge, and Safari */
+      *::-webkit-scrollbar {
+        width: 14px;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: #010409;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background-color: #1b222c;
+        border-radius: 20px;
+        border: 3px solid #010409;
+      }
+
+      body,
+      html {
+        background: #291425 !important;
+        padding-top: 15px;
+        min-height: 100%;
+      }
+
+      .centered {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        /* bring your own prefixes */
+        transform: translate(-50%, -50%);
+      }
+
+      button {
+        background-color: rgb(255, 255, 255);
+        color: rgb(0, 0, 0);
+      }
+
+      #auth-status {
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info" class="container centered text-center">
+      <div class="text-white py-2">
+        <img
+          class="border border-secondary border-2 rounded-4"
+          src="https://yt3.googleusercontent.com/ytc/AIf8zZTyiKTSj1JOWvXwACy2e7j2TGRDEhlqHH8QQoZQ=s900-c-k-c0x00ffffff-no-rj"
+          draggable="false"
+          width="100px"
+        />
+        <p class="pt-2"><b>EBC Discord</b></p>
+        <p>Link Accounts</p>
+      </div>
+      <div class="d-grid gap-2" id="socials">
+        <button id="strava" style="display: none">Auth with Strava</button>
+      </div>
+      <h1 id="auth-status"></h1>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.umd.js"></script>
+    <script type="text/javascript">
+      if(navigator.userAgentData.mobile) {
+        document.getElementById("info").style.display = "none";
+      }
+      const pb = new PocketBase("http://127.0.0.1:8090");
+      const redirectUrl = "http://127.0.0.1:8090/redirect.html";
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const discordId = urlParams.get("discordId");
+
+      if (discordId != null || discordId != "") {
+        document.getElementById("strava").style.display = "block";
+      }
+
+      document.getElementById("strava").addEventListener("click", myFunction);
+
+      async function myFunction() {
+        const authData = await pb
+          .collection("users")
+          .authWithOAuth2({
+            provider: "strava",
+            scopes: ["activity:read"],
+            createData: {
+              discordId: discordId,
+            },
+            redirectUrl: redirectUrl,
+          })
+          .then(() => {
+            document.getElementById("auth-status").innerText =
+              "SUCCESS. You can close this window";
+            document.getElementById("strava").style.display = "none";
+          })
+          .catch(() => {
+            document.getElementById("auth-status").innerText =
+              "FAILURE. Try again";
+          });
+      }
+    </script>
+  </body>
+</html>

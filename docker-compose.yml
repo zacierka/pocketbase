@@ -1,0 +1,10 @@
+version: '1'
+services:
+  app:
+    image: pb:latest
+    container_name: pb
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 8090:8090
