@@ -20,10 +20,10 @@ RUN CGO_ENABLED=0 go build -o /pb/pocketbase
 # uncomment to copy the local pb_migrations dir into the image
 COPY ./pb_data /pb/pb_data
 
-# uncomment to copy the local pb_hooks dir into the image
+# auth pages
 COPY ./pb_public /pb/pb_public
 
 EXPOSE 8090
 
 # start PocketBase
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090" ]

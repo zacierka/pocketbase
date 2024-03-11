@@ -55,7 +55,7 @@ func main() {
 					return c.String(http.StatusOK, "EVENT_RECEIVED")
 				}
 
-				sendDiscordActivity(activity)
+				sendDiscordActivity(app.Dao(), activity)
 			}
 
 			return c.String(http.StatusOK, "EVENT_RECEIVED")
@@ -68,18 +68,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-/*
-func resolveDiscordNameFromStravaID(dao *daos.Dao, stravaId string) string {
-	stravaUser, error := dao.FindFirstRecordByData("users_strava", "stravaId", stravaId)
-	if error != nil {
-		return ""
-	}
-
-	if errs := dao.ExpandRecord(stravaUser, []string{"user"}, nil); len(errs) > 0 {
-		return ""
-	}
-
-	return stravaUser.ExpandedOne("user").GetString("discordId")
-}
-*/

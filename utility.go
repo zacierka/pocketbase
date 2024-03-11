@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	strava "github.com/strava/go.strava"
@@ -42,5 +43,19 @@ func getStravaAthleteActivity(token string, id int64) *strava.ActivityDetailed {
 		return nil
 	}
 	return activity
+
+}
+
+func calculatePace(seconds int, distance float64) time.Duration {
+	raw_pace := float64(seconds) / distance // pace/mi in seconds
+	min := int(raw_pace / 60.00)            // seconds to mins
+	rem := int(math.Mod(raw_pace, 1) * 60)  // remainder to seconds
+
+	var pace, error = time.ParseDuration(fmt.Sprintf("%dm%ds", min, rem))
+	if error != nil {
+		pace = time.Duration(0)
+	}
+
+	return pace
 
 }

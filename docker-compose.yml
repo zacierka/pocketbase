@@ -1,10 +1,17 @@
 version: '1'
 services:
-  app:
+  pocketbase:
     image: pb:latest
     container_name: pb
+    build: .
     restart: always
     env_file:
       - .env
     ports:
       - 8090:8090
+    volumes:
+      - pocketbase-volume:/pb
+
+volumes:
+  pocketbase-volume:
+    name: pocketbase-volume
