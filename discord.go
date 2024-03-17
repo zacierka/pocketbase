@@ -38,7 +38,7 @@ func send(wg *sync.WaitGroup, client webhook.Client, activity *strava.ActivityDe
 	defer wg.Done()
 
 	username := resolveDiscordNameFromStravaID(dao, activity.Athlete.Id)
-	dist := activity.Distance * 0.000621
+	dist := metersToMiles(activity.Distance)
 	duration, _ := time.ParseDuration(fmt.Sprintf("%ds", activity.MovingTime))
 	pace := calculatePace(activity.MovingTime, dist)
 
@@ -47,10 +47,11 @@ func send(wg *sync.WaitGroup, client webhook.Client, activity *strava.ActivityDe
 		//SetDescription(activity.Description).
 		SetURLf("https://www.strava.com/activities/%s", strconv.FormatInt(activity.Id, 10)).
 		SetColor(0x37ff00).
+		SetThumbnail("https://pbs.twimg.com/profile_images/900411562250256384/ALkwa0jf_200x200.jpg").
 		SetFields(
 			discord.EmbedField{
 				Name:   "Distance",
-				Value:  strconv.FormatFloat(dist, 'f', -1, 64),
+				Value:  fmt.Sprintf("%.2f", dist),
 				Inline: boolPointer(true),
 			},
 			discord.EmbedField{
@@ -60,12 +61,12 @@ func send(wg *sync.WaitGroup, client webhook.Client, activity *strava.ActivityDe
 			},
 			discord.EmbedField{
 				Name:   "Pace",
-				Value:  fmt.Sprintf("%s /mi", pace.String()),
+				Value:  fmt.Sprintf("%s/mi", pace.String()),
 				Inline: boolPointer(true),
 			},
 		).
 		SetTimestamp(time.Now()).
-		SetFooter("Strava Notifier", "").
+		SetFooter("Strava Notifier", "https://pbs.twimg.com/profile_images/900411562250256384/ALkwa0jf_400x400.jpg").
 		Build()
 
 	if _, err := client.CreateMessage(discord.NewWebhookMessageCreateBuilder().

@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 go build -o /pb/pocketbase
 # Figure out how to get data to persist with volumes
 
 # uncomment to copy the local pb_migrations dir into the image
-COPY ./pb_data /pb/pb_data
+# COPY ./pb_data /pb/pb_data
 
 # auth pages
 COPY ./pb_public /pb/pb_public

@@ -46,16 +46,24 @@ func getStravaAthleteActivity(token string, id int64) *strava.ActivityDetailed {
 
 }
 
-func calculatePace(seconds int, distance float64) time.Duration {
-	raw_pace := float64(seconds) / distance // pace/mi in seconds
-	min := int(raw_pace / 60.00)            // seconds to mins
-	rem := int(math.Mod(raw_pace, 1) * 60)  // remainder to seconds
+func calculatePace(durationInSeconds int, distanceInMeters float64) time.Duration {
+	// Convert distance from meters to miles
+	distanceInMiles := distanceInMeters / 1609.34
 
-	var pace, error = time.ParseDuration(fmt.Sprintf("%dm%ds", min, rem))
-	if error != nil {
-		pace = time.Duration(0)
-	}
+	// Calculate pace in minutes per mile
+	paceInMinutesPerMile := float64(durationInSeconds) / 60.0 / distanceInMiles
 
-	return pace
+	// Format the result as "mm:ss" string
+	pace := time.Duration(paceInMinutesPerMile * float64(time.Minute))
+	paceString := pace.Round(time.Second)
 
+	return paceString
+}
+
+func metersToMiles(meters float64) float64 {
+	return meters * 0.000621371 // 1 meter = 0.000621371 miles
+}
+
+func Round(x, unit float64) float64 {
+	return math.Round(x*unit) / unit
 }
