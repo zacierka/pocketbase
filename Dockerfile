@@ -11,7 +11,7 @@ RUN go mod download
 # https://docs.docker.com/engine/reference/builder/#copy
 COPY *.go ./
 
-
+ 
 # Build
 RUN CGO_ENABLED=0 go build -o /pb/pocketbase
 
