@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  pocketbase:
+    image: switchrl/stravanotifier:1.0.0
+    container_name: stravaservice
+    restart: always
+    tty: true
+    env_file:
+      - stack.env
+    ports:
+      - 8090:8090
+    volumes:
+      - pocketbase-volume:/pb
+
+volumes:
+  pocketbase-volume:
+    name: pocketbase-volume

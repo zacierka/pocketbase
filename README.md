@@ -1,2 +1,5 @@
 # pocketbase
 pocketbase for personal website
+
+
+FIGURE OUT BUILD VERSIONING WITH THE SAME WAY I DID FOR THE TWITCHLOGGER

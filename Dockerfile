@@ -11,9 +11,11 @@ RUN go mod download
 # https://docs.docker.com/engine/reference/builder/#copy
 COPY *.go ./
 
+# copy over teh scripts for init app
+COPY ./strava /pb/strava
  
 # Build
-RUN CGO_ENABLED=0 go build -o /pb/pocketbase
+RUN GOOS=linux GOARCH=arm CGO_ENABLED=0 go build -o /pb/pocketbase
 
 # Figure out how to get data to persist with volumes
 
